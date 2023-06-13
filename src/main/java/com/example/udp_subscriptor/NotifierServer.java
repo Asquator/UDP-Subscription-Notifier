@@ -56,7 +56,7 @@ public class NotifierServer extends Thread{
 
     private class RequestReceiver implements Runnable{
 
-        private byte[] buf = new byte[100];
+        private byte[] buf = new byte[200];
         private DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         @Override
@@ -105,5 +105,4 @@ public class NotifierServer extends Thread{
             }
         }
     }
-
 }

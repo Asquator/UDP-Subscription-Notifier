@@ -1,7 +1,11 @@
 package com.example.udp_subscriptor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.*;
+
+import static javafx.application.Platform.runLater;
 
 public class NotifierClient extends Thread{
 
@@ -29,7 +33,7 @@ public class NotifierClient extends Thread{
         while (true)
             try {
                 socket.receive(packet);
-                cont.appendText(new String(msgbuffer).substring(packet.getLength()));
+                runLater(() -> cont.appendText(new String(msgbuffer).substring(0, packet.getLength())));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -37,11 +41,23 @@ public class NotifierClient extends Thread{
     }
 
     public void subscribe(boolean val){
-        byte[] buf = new byte[100];
+        byte[] buf = new byte[200];
         NotifierServer.SubscribeRequest req = val ? NotifierServer.SubscribeRequest.SUBSCRIBE :
                 NotifierServer.SubscribeRequest.UNSUBSCRIBE;
 
         DatagramPacket packet;
+
+
+        try(ByteArrayOutputStream bs = new ByteArrayOutputStream(buf.length);
+                ObjectOutputStream os = new ObjectOutputStream(bs))
+        {
+                os.writeObject(req);
+                buf = bs.toByteArray();
+        }
+
+        catch(IOException ex){
+            return;
+        }
 
         while(true){
             try{
