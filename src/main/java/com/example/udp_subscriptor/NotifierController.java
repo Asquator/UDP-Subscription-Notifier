@@ -2,17 +2,58 @@ package com.example.udp_subscriptor;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
 
 public class NotifierController {
 
     @FXML
-    void onClearClicked(ActionEvent event) {
+    private Button subButton;
 
+    @FXML
+    private TextArea textArea;
+
+    private boolean subscribed = false;
+
+    NotifierClient client;
+
+    public void initialize(){
+        subButton.setDisable(true);
+
+        try {
+            client = new NotifierClient(this, UserApplication.getHostname());
+        }
+
+        catch (Exception e){
+            System.err.println("Couldn't initialize client");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        client.start();
+
+        subButton.setDisable(false);
+    }
+
+    void appendText(String text){
+        textArea.setText(textArea.getText() + text);
+    }
+
+    @FXML
+    void onClearClicked(ActionEvent event) {
+        textArea.clear();
     }
 
     @FXML
     void onSignClicked(ActionEvent event) {
+        subscribed = !subscribed;
+        subButton.setDisable(true);
 
+        client.subscribe(subscribed);
+
+        subButton.setText(subscribed ? "Unsubscribe" : "Subscribe");
+        subButton.setDisable(false);
     }
 
 }

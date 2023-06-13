@@ -8,15 +8,18 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="577.0" prefWidth="833.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.udp_subscriptor.NotifierController">
    <children>
-      <TextArea editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="573.0" prefWidth="883.0" />
+      <TextArea fx:id="textArea" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="573.0" prefWidth="883.0">
+         <font>
+            <Font size="18.0" />
+         </font></TextArea>
       <ToolBar maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="200.0">
         <items>
-          <Button mnemonicParsing="false" onAction="#onSignClicked" prefHeight="26.0" prefWidth="95.0">
+          <Button fx:id="subButton" mnemonicParsing="false" onAction="#onSignClicked" prefHeight="34.0" prefWidth="129.0" text="Subscribe">
                <font>
                   <Font size="18.0" />
                </font>
             </Button>
-            <Button mnemonicParsing="false" onAction="#onClearClicked" prefHeight="34.0" prefWidth="102.0" text="Clear">
+            <Button mnemonicParsing="false" onAction="#onClearClicked" prefHeight="35.0" prefWidth="122.0" text="Clear">
                <font>
                   <Font size="18.0" />
                </font>
