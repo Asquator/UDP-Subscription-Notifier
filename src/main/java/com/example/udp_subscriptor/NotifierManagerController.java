@@ -14,6 +14,7 @@ public class NotifierManagerController {
     @FXML
     void onSendClicked(ActionEvent event) {
         server.send(textArea.getText());
+        textArea.clear();
     }
 
     public void initialize(){

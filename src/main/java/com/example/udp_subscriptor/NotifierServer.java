@@ -23,8 +23,9 @@ public class NotifierServer extends Thread{
     public NotifierServer(){
         try {
             socket = new DatagramSocket(PORT);
-            new Thread(new RequestReceiver()).start();
-
+            Thread listener = new Thread(new RequestReceiver());
+            listener.setDaemon(true);
+            listener.start();
         }
         catch(SocketException ex){
             ex.printStackTrace();
@@ -104,5 +105,9 @@ public class NotifierServer extends Thread{
                     throw new IllegalStateException("Unexpected value: " + req);
             }
         }
+    }
+
+    public void stopServer(){
+        socket.close();
     }
 }

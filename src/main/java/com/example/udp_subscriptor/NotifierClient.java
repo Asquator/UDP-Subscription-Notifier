@@ -1,18 +1,21 @@
 package com.example.udp_subscriptor;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.IOException;
 import java.net.*;
+import java.util.Date;
 
 import static javafx.application.Platform.runLater;
 
-public class NotifierClient extends Thread{
+public class NotifierClient implements Runnable{
 
     private DatagramSocket socket;
     private String host;
 
     private byte[] msgbuffer = new byte[10000];
+
+    private byte[] requestBuf = new byte[200];
 
     private NotifierController cont;
 
@@ -24,16 +27,21 @@ public class NotifierClient extends Thread{
         this.host = host;
     }
 
+
     @Override
     public void run() {
-        super.run();
-
         DatagramPacket packet = new DatagramPacket(msgbuffer, msgbuffer.length);
 
         while (true)
             try {
                 socket.receive(packet);
-                runLater(() -> cont.appendText(new String(msgbuffer).substring(0, packet.getLength())));
+                String msg = new StringBuilder().append(
+                        new Date()).append(
+                        "   ").append(
+                        new String(msgbuffer).substring(0, packet.getLength())).append(
+                        "\n").toString();
+
+                runLater(() -> cont.appendText(msg));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -41,35 +49,33 @@ public class NotifierClient extends Thread{
     }
 
     public void subscribe(boolean val){
-        byte[] buf = new byte[200];
+
         NotifierServer.SubscribeRequest req = val ? NotifierServer.SubscribeRequest.SUBSCRIBE :
                 NotifierServer.SubscribeRequest.UNSUBSCRIBE;
 
         DatagramPacket packet;
 
 
-        try(ByteArrayOutputStream bs = new ByteArrayOutputStream(buf.length);
+        try(ByteArrayOutputStream bs = new ByteArrayOutputStream(requestBuf.length);
                 ObjectOutputStream os = new ObjectOutputStream(bs))
         {
                 os.writeObject(req);
-                buf = bs.toByteArray();
+                requestBuf = bs.toByteArray();
         }
 
         catch(IOException ex){
             return;
         }
 
-        while(true){
-            try{
-                packet = new DatagramPacket(buf, buf.length,
-                        InetAddress.getByName(host), NotifierServer.PORT);
+        try{
+            packet = new DatagramPacket(requestBuf, requestBuf.length,
+                    InetAddress.getByName(host), NotifierServer.PORT);
 
-                socket.send(packet);
-                break;
-            }
-            catch(IOException ex){
-                System.err.println("Couldn't send, trying again");
-            }
+            socket.send(packet);
         }
+        catch(IOException ex){
+            System.err.println("Couldn't send");
+        }
+
     }
 }

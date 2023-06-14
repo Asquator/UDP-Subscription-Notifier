@@ -4,7 +4,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.VBox;
 
 public class NotifierController {
 
@@ -31,13 +30,15 @@ public class NotifierController {
             System.exit(1);
         }
 
-        client.start();
+        Thread cThread = new Thread(client);
+        cThread.setDaemon(true);
+        cThread.start();
 
         subButton.setDisable(false);
     }
 
     void appendText(String text){
-        textArea.setText(textArea.getText() + text);
+         textArea.setText(textArea.getText() + text);
     }
 
     @FXML
