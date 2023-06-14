@@ -17,9 +17,13 @@ public class NotifierController {
 
     NotifierClient client;
 
+    /**
+     * Initializes GUI controller
+     */
     public void initialize(){
         subButton.setDisable(true);
 
+        //try to initialize the client
         try {
             client = new NotifierClient(this, UserApplication.getHostname());
         }
@@ -30,6 +34,7 @@ public class NotifierController {
             System.exit(1);
         }
 
+        //start client in a daemon thread
         Thread cThread = new Thread(client);
         cThread.setDaemon(true);
         cThread.start();
@@ -37,6 +42,10 @@ public class NotifierController {
         subButton.setDisable(false);
     }
 
+    /**
+     * Appends text to the text area
+     * @param text text to append
+     */
     void appendText(String text){
          textArea.setText(textArea.getText() + text);
     }
@@ -48,6 +57,8 @@ public class NotifierController {
 
     @FXML
     void onSignClicked(ActionEvent event) {
+
+        //change button text and instruct client instance to subscribe
         subscribed = !subscribed;
         subButton.setDisable(true);
 

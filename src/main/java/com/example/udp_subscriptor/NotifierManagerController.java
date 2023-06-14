@@ -17,8 +17,13 @@ public class NotifierManagerController {
         textArea.clear();
     }
 
+    /**
+     * Initializes notifier manager
+     */
     public void initialize(){
+        //start the server thread
         server = new NotifierServer();
+        server.setDaemon(true);
         server.start();
     }
 

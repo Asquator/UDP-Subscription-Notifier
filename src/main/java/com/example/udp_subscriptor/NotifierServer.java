@@ -20,22 +20,27 @@ public class NotifierServer extends Thread{
 
     private DatagramSocket socket;
 
+    /**
+     * Create a server instance and start listener
+     */
     public NotifierServer(){
         try {
             socket = new DatagramSocket(PORT);
-            Thread listener = new Thread(new RequestReceiver());
-            listener.setDaemon(true);
-            listener.start();
         }
         catch(SocketException ex){
             ex.printStackTrace();
         }
     }
 
+    /**
+     * Broadcast the given message
+     * @param text message
+     */
     public void send(String text){
         DatagramPacket packet;
         buffer = text.getBytes();
 
+        //lock on the set of clients and send the message to everybody
         synchronized (clients){
             for(InetSocketAddress addr : clients){
                 packet = new DatagramPacket(buffer, buffer.length, addr);
@@ -51,17 +56,36 @@ public class NotifierServer extends Thread{
         }
     }
 
+    /**
+     * Run the server
+     */
+    @Override
+    public void run() {
+        super.run();
+
+        Thread listener = new Thread(new RequestListener());
+        listener.setDaemon(true);
+        listener.start();
+    }
+
+    /**
+     * Subscription option
+     */
     public enum SubscribeRequest{
         SUBSCRIBE, UNSUBSCRIBE;
     }
 
-    private class RequestReceiver implements Runnable{
+
+    //listens to user subscription requests
+    private class RequestListener implements Runnable{
 
         private byte[] buf = new byte[200];
         private DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         @Override
         public void run() {
+
+            //continuously listen to request and process them
             while(true){
                 try {
                     SubscribeRequest req = receiveRequest();
@@ -74,27 +98,32 @@ public class NotifierServer extends Thread{
             }
         }
 
+        //receive a UDP subscription request
         private SubscribeRequest receiveRequest() throws IOException, ClassNotFoundException {
             socket.receive(packet);
-            InetSocketAddress addr = new InetSocketAddress(packet.getAddress(), packet.getPort());
+
+            //extract data
             byte[] data = packet.getData();
 
+            //return ready request
             try(ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(data))){
                 return (SubscribeRequest) is.readObject();
             }
         }
 
+        //process the given request
         private void processRequest(SubscribeRequest req){
+            //exctract IP address
             InetSocketAddress addr = new InetSocketAddress(packet.getAddress(), packet.getPort());
 
             switch (req){
-                case SUBSCRIBE:
+                case SUBSCRIBE: //subscribe request
                     synchronized (clients){
                         clients.add(addr);
                     }
                     break;
 
-                case UNSUBSCRIBE:
+                case UNSUBSCRIBE: //remove subscription request
                     synchronized (clients){
                         clients.remove(addr);
                     }
@@ -105,9 +134,5 @@ public class NotifierServer extends Thread{
                     throw new IllegalStateException("Unexpected value: " + req);
             }
         }
-    }
-
-    public void stopServer(){
-        socket.close();
     }
 }
